@@ -151,8 +151,9 @@ impl<'info> TradeCoin<'info> {
 
 
         let transfer_accounts = Transfer {
-            from: self.bonding_curve_token_account.to_account_info(),
-            to: self.sol_escrow.to_account_info(),
+            from: self.sol_escrow.to_account_info(),
+            // better name would be trader instead of buyer to suit both buy and sell
+            to: self.buyer.to_account_info(),
         };
 
         let seeds = &[
@@ -167,9 +168,9 @@ impl<'info> TradeCoin<'info> {
 
         transfer(cpi_ctx, sol_amount)?;
 
-        bonding_curve.virtual_token_liquidity = bonding_curve.virtual_token_liquidity.checked_sub(token_amount).ok_or(MiniPumpError::InsufficientTokenBalance)?;
-        bonding_curve.virtual_sol_liquidity = bonding_curve.virtual_sol_liquidity.checked_add(sol_amount).ok_or(MiniPumpError::ArithmeticOverflow)?;
-        bonding_curve.tokens_sold = bonding_curve.tokens_sold.checked_add(token_amount).ok_or(MiniPumpError::ArithmeticOverflow)?;
+        bonding_curve.virtual_token_liquidity = bonding_curve.virtual_token_liquidity.checked_add(token_amount).ok_or(MiniPumpError::ArithmeticOverflow)?;
+        bonding_curve.virtual_sol_liquidity = bonding_curve.virtual_sol_liquidity.checked_sub(sol_amount).ok_or(MiniPumpError::InsufficientTokenBalance)?;
+        bonding_curve.tokens_sold = bonding_curve.tokens_sold.checked_sub(token_amount).ok_or(MiniPumpError::ArithmeticOverflow)?;
 
       
         
